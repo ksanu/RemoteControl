@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="jakub.remotecontrol.MainActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <EditText
+            android:id="@+id/passwordEditText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginEnd="11dp"
+            android:layout_marginTop="31dp"
+            android:ems="10"
+            android:inputType="textPassword" />
+
+        <TextView
+            android:id="@+id/passwordTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/passwordEditText"
+            android:layout_marginBottom="11dp"
+            android:layout_marginEnd="19dp"
+            android:layout_toStartOf="@+id/passwordEditText"
+            android:text="@+string/TextView"
+            android:textSize="20sp"
+            android:labelFor="@id/passwordEditText"
+            tools:text="Hasło: " />
+
+        <Button
+            android:id="@+id/findMoreBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginBottom="40dp"
+            android:layout_marginStart="38dp"
+            android:text="findMoreBtn"
+            tools:text="Znajdź więcej" />
+
+        <Button
+            android:id="@+id/connectBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/findMoreBtn"
+            android:layout_alignBottom="@+id/findMoreBtn"
+            android:layout_alignEnd="@+id/passwordEditText"
+            android:layout_marginEnd="33dp"
+            android:text="connectBtn"
+            tools:text="Połącz" />
+
+        <TextView
+            android:id="@+id/SelectDevTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/passwordTextView"
+            android:layout_below="@+id/passwordEditText"
+            android:layout_marginTop="34dp"
+            android:text="SelectDev"
+            android:textAlignment="center"
+            android:textSize="18sp"
+            tools:text="Wybierz urządzenie:" />
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/SelectDevTextView"
+            android:layout_above="@+id/findMoreBtn"
+            android:layout_margin="20dp"
+            android:layout_alignParentStart="true" />
+
+    </RelativeLayout>
+</android.support.constraint.ConstraintLayout>
