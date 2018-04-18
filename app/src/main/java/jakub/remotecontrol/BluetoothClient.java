@@ -4,14 +4,21 @@ import android.app.Notification;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,8 +27,9 @@ import java.util.UUID;
  */
 
 public class BluetoothClient {
-    private Handler mHandler; // handler that gets info from Bluetooth client
-
+    private Integer btState = null;
+    BufferedReader myBlueroothConnectionReader = null;
+    PrintWriter myBluetoorhConnectionWriter = null;
     BluetoothAdapter mBluetoothAdapter;
     public BluetoothClient(){
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -37,11 +45,39 @@ public class BluetoothClient {
         // ... (Add other message types here as needed.)
     }
 
+    /**
+     * A method for sending messages to remote server.
+     * @param messageType The type of the message.
+     * @param messageContent The content of the message.
+     * @return Rerurns true if sended succesfully. False otherwise.
+     */
+    public boolean sendMessage(String messageType, String messageContent)
+    {
+        if(btState.equals(BTStates.btConnectedWithDevice)&&myBluetoorhConnectionWriter!=null)
+        {
+            myBluetoorhConnectionWriter.write(messageType + "\t" + messageContent + "\n");
+            myBluetoorhConnectionWriter.flush();
+            return true;
+        }else {
+            return false;
+        }
+    }
+    public void connectToServer(BluetoothDevice device)
+    {
+        new Thread(new ConnectThread(device)).start();
+    }
+
+    public void stopBTClient()
+    {
+        btState = BTStates.btEND;
+    }
+
     private class ConnectThread extends Thread {
         private final BluetoothSocket mmSocket;
         private final BluetoothDevice mmDevice;
 
         public ConnectThread(BluetoothDevice device) {
+            btState = BTStates.btConnecting;
             // Use a temporary object that is later assigned to mmSocket
             // because mmSocket is final.
             BluetoothSocket tmp = null;
@@ -49,12 +85,9 @@ public class BluetoothClient {
 
             try {
                 // Get a BluetoothSocket to connect with the given BluetoothDevice.
-                // MY_UUID is the app's UUID string, also used in the server code.
-                java.util.UUID myUUID = java.util.UUID.fromString("f2444d82-48d7-4d5a-b885-6992f20db093");
-
+                java.util.UUID myUUID = java.util.UUID.fromString("08acfa82-0000-1000-8000-00805f9b34fb");//145554050
                 tmp = device.createRfcommSocketToServiceRecord(myUUID);
             } catch (IOException e) {
-                //Log.e(TAG, "Socket's create() method failed", e);
                 e.printStackTrace();
             }
             mmSocket = tmp;
@@ -70,6 +103,7 @@ public class BluetoothClient {
                 mmSocket.connect();
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and return.
+                btState = BTStates.btUnableToConnect;
                 try {
                     mmSocket.close();
                 } catch (IOException closeException) {
@@ -81,15 +115,16 @@ public class BluetoothClient {
 
             // The connection attempt succeeded. Perform work associated with
             // the connection in a separate thread.
-            new ConnectedThread(mmSocket);
+            if(btState.equals(BTStates.btConnecting))
+                new Thread(new ConnectedThread(mmSocket)).start();
         }
 
         // Closes the client socket and causes the thread to finish.
         public void cancel() {
             try {
+                btState = BTStates.btEND;
                 mmSocket.close();
             } catch (IOException e) {
-               // Log.e(TAG, "Could not close the client socket", e);
                 e.printStackTrace();
             }
         }
@@ -99,7 +134,6 @@ public class BluetoothClient {
         private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
-        private byte[] mmBuffer; // mmBuffer store for the stream
 
         public ConnectedThread(BluetoothSocket socket) {
             mmSocket = socket;
@@ -121,54 +155,33 @@ public class BluetoothClient {
 
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
+
+            myBlueroothConnectionReader = new BufferedReader(new InputStreamReader(mmInStream));
+            myBluetoorhConnectionWriter = new PrintWriter(new OutputStreamWriter(mmOutStream));
+
+            if(btState.equals(BTStates.btConnecting))btState = BTStates.btConnectedWithDevice;
         }
 
         public void run() {
-            mmBuffer = new byte[1024];
-            int numBytes; // bytes returned from read()
 
             // Keep listening to the InputStream until an exception occurs.
-            while (true) {
+            while (!btState.equals(BTStates.btEND)) {
                 try {
-                    // Read from the InputStream.
-                    numBytes = mmInStream.read(mmBuffer);
-                    // Send the obtained bytes to the UI activity.
-                    Message readMsg = mHandler.obtainMessage(
-                            MessageConstants.MESSAGE_READ, numBytes, -1,
-                            mmBuffer);
-                    readMsg.sendToTarget();
+                    // Read message line from the InputStream.
+                    String messageLine = myBlueroothConnectionReader.readLine();
+                    //todo: handle received message
+                    System.out.println(messageLine);
                 } catch (IOException e) {
-                    //Log.d(TAG, "Input stream was disconnected", e);
+                    btState = BTStates.btEND;
                     break;
                 }
             }
         }
 
-        // Call this from the main activity to send data to the remote device.
-        public void write(byte[] bytes) {
-            try {
-                mmOutStream.write(bytes);
-
-                // Share the sent message with the UI activity.
-                Message writtenMsg = mHandler.obtainMessage(
-                        MessageConstants.MESSAGE_WRITE, -1, -1, mmBuffer);
-                writtenMsg.sendToTarget();
-            } catch (IOException e) {
-                //Log.e(TAG, "Error occurred when sending data", e);
-
-                // Send a failure message back to the activity.
-                Message writeErrorMsg =
-                        mHandler.obtainMessage(MessageConstants.MESSAGE_TOAST);
-                Bundle bundle = new Bundle();
-                bundle.putString("toast",
-                        "Couldn't send data to the other device");
-                writeErrorMsg.setData(bundle);
-                mHandler.sendMessage(writeErrorMsg);
-            }
-        }
 
         // Call this method from the main activity to shut down the connection.
         public void cancel() {
+            btState = BTStates.btEND;
             try {
                 mmSocket.close();
             } catch (IOException e) {
@@ -177,19 +190,7 @@ public class BluetoothClient {
         }
     }
 
-    public void queryForPairedDevices()
-    {
 
-        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-
-        if (pairedDevices.size() > 0) {
-            // There are paired devices. Get the name and address of each paired device.
-            for (BluetoothDevice device : pairedDevices) {
-                String deviceName = device.getName();
-                String deviceHardwareAddress = device.getAddress(); // MAC address
-            }
-        }
-    }
 
 
 }
