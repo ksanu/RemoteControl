@@ -6,4 +6,119 @@
     android:layout_height="match_parent"
     tools:context="jakub.remotecontrol.RemoteActivity">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <Button
+            android:id="@+id/upArrowBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/leftArrowBtn"
+            android:layout_alignStart="@+id/downArrowBtn"
+            android:background="@drawable/arrow_up" />
+
+        <Button
+            android:id="@+id/leftArrowBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/downArrowBtn"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="26dp"
+            android:background="@drawable/arrow_left"
+            tools:layout_editor_absoluteX="33dp"
+            tools:layout_editor_absoluteY="0dp" />
+
+        <Button
+            android:id="@+id/downArrowBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/arrow_down" />
+
+        <Button
+            android:id="@+id/rightArrowBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/downArrowBtn"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="30dp"
+            android:background="@drawable/arrow_right" />
+
+        <Button
+            android:id="@+id/leftClickBtn"
+            android:layout_width="46dp"
+            android:layout_height="100dp"
+            android:layout_above="@+id/downArrowBtn"
+            android:layout_alignStart="@+id/downArrowBtn"
+            android:background="@drawable/mouse_button"
+            android:text="L"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/rightClickBtn"
+            android:layout_width="46dp"
+            android:layout_height="100dp"
+            android:layout_above="@+id/downArrowBtn"
+            android:layout_alignEnd="@+id/downArrowBtn"
+            android:background="@drawable/mouse_button"
+            android:text="P"
+            android:textSize="18sp" />
+
+        <Spinner
+            android:id="@+id/availableActionsSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="51dp"
+            android:layout_toStartOf="@+id/rightArrowBtn" />
+
+        <Button
+            android:id="@+id/executeActionBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginEnd="17dp"
+            android:layout_marginTop="39dp"
+            android:text="Wykonaj" />
+
+        <TextView
+            android:id="@+id/availableActionsTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignStart="@+id/toSentNameTextView"
+            android:layout_marginTop="24dp"
+            android:text="Dostępne akcje:"
+            android:textSize="20sp" />
+
+        <EditText
+            android:id="@+id/toSentEditText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/upArrowBtn"
+            android:layout_toStartOf="@+id/executeActionBtn"
+            android:ems="20"
+            android:inputType="textPersonName" />
+
+        <TextView
+            android:id="@+id/toSentNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/toSentEditText"
+            android:layout_alignStart="@+id/toSentEditText"
+            android:text="Wpisz tekst do wysłania:"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/clearToSentBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignTop="@+id/toSentEditText"
+            android:text="Wyczyść" />
+    </RelativeLayout>
 </android.support.constraint.ConstraintLayout>

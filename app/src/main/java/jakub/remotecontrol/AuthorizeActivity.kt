@@ -5,8 +5,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.widget.TextView
-import android.widget.Toast
+import android.view.View
+import android.widget.*
 
 class AuthorizeActivity : AppCompatActivity() {
 
@@ -17,7 +17,6 @@ class AuthorizeActivity : AppCompatActivity() {
         Toast.makeText(applicationContext,
                 "Połączono!", Toast.LENGTH_LONG)
                 .show()
-        val textView = findViewById<TextView>(R.id.messageText)
 
         val mHandler = object: Handler(Looper.getMainLooper()){
             override fun handleMessage(msg: Message?) {
@@ -25,9 +24,8 @@ class AuthorizeActivity : AppCompatActivity() {
                 when(msg!!.what)
                 {
                     MyBluetooth.MessageConstants.TO_AuthorizeActivity_Message -> {
-                        val receivedString = msg!!.obj as String
+                        val receivedString = msg.obj as String
                         Toast.makeText(applicationContext, receivedString, Toast.LENGTH_LONG).show()
-                        textView.setText(receivedString)
                     }
                     MyBluetooth.MessageConstants.TO_ConnectActivity_CONNECTION_ERROR -> finish()
                 }
@@ -37,9 +35,19 @@ class AuthorizeActivity : AppCompatActivity() {
             MyBluetooth.btClient.changeMsgHandler(mHandler)
             MyBluetooth.btClient.startCommunication()
         }else{
-            textView.setText("Błąd połączenia")
+            Toast.makeText(applicationContext, "Błąd połączenia", Toast.LENGTH_LONG).show()
         }
     }
 
+    fun loginBtnOnClick(view: View)
+    {
+        view.isEnabled = false
+        //val loginBtn = findViewById<TextView>(R.id.loginBtn)
+        //loginBtn.isEnabled = false
+        val progress = findViewById<ProgressBar>(R.id.progressBar)
+        progress.visibility = View.VISIBLE
+        val pwText = findViewById<EditText>(R.id.passwordEditText)
+        pwText.isEnabled = false
+    }
 
 }

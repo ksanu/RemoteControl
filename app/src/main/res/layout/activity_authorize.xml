@@ -8,17 +8,45 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        >
 
-        <EditText
-            android:id="@+id/messageText"
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
+            android:layout_above="@+id/textView"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="131dp"
+            android:layout_marginBottom="33dp"
+            android:visibility="invisible" />
+
+        <EditText
+            android:id="@+id/passwordEditText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/loginBtn"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="32dp"
             android:ems="10"
-            android:inputType="textPersonName"
-            android:text="test" />
+            android:inputType="textPassword" />
+
+        <Button
+            android:id="@+id/loginBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:onClick="loginBtnOnClick"
+            android:text="Zaloguj" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/passwordEditText"
+            android:layout_alignStart="@+id/passwordEditText"
+            android:text="Wpisz hasło:"
+            android:textSize="20sp" />
     </RelativeLayout>
 </android.support.constraint.ConstraintLayout>

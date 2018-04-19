@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
                 override fun onItemClick(parent: AdapterView<*>, view: View,
                                          position: Int, id: Long) {
                     // ListView Clicked item value
-                    val itemValue = myDevicesListView!!.getItemAtPosition(position) as String
+                    val itemValue = myDevicesListView.getItemAtPosition(position) as String
                     connectToServer(itemValue)
                     // Show Alert
                     Toast.makeText(applicationContext,
