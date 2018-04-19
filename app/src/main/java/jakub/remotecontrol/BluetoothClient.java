@@ -30,19 +30,21 @@ public class BluetoothClient {
     private Integer btState = null;
     BufferedReader myBlueroothConnectionReader = null;
     PrintWriter myBluetoorhConnectionWriter = null;
+    private  BluetoothSocket mmSocket = null;
+    private  BluetoothDevice mmDevice = null;
     BluetoothAdapter mBluetoothAdapter;
-    public BluetoothClient(){
+    Handler mHandler;
+    public BluetoothClient(Handler msgHandler){
+        mHandler = msgHandler;
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
             // Device doesn't support Bluetooth
         }
     }
-    private interface MessageConstants {
-        public static final int MESSAGE_READ = 0;
-        public static final int MESSAGE_WRITE = 1;
-        public static final int MESSAGE_TOAST = 2;
 
-        // ... (Add other message types here as needed.)
+    synchronized public void changeMsgHandler(Handler msgHandler)
+    {
+        mHandler = msgHandler;
     }
 
     /**
@@ -67,14 +69,24 @@ public class BluetoothClient {
         new Thread(new ConnectThread(device)).start();
     }
 
+    public void startCommunication()
+    {
+        new Thread(new ConnectedThread(mmSocket)).start();
+
+    }
     public void stopBTClient()
     {
         btState = BTStates.btEND;
+        try{
+           if(mmSocket!=null) mmSocket.close();
+           if(myBlueroothConnectionReader!=null) myBlueroothConnectionReader.close();
+           if(myBluetoorhConnectionWriter!=null) myBluetoorhConnectionWriter.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private class ConnectThread extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final BluetoothDevice mmDevice;
 
         public ConnectThread(BluetoothDevice device) {
             btState = BTStates.btConnecting;
@@ -115,8 +127,15 @@ public class BluetoothClient {
 
             // The connection attempt succeeded. Perform work associated with
             // the connection in a separate thread.
-            if(btState.equals(BTStates.btConnecting))
-                new Thread(new ConnectedThread(mmSocket)).start();
+            if(btState.equals(BTStates.btConnecting)) {
+                btState = BTStates.btConnectedWithDevice;
+                Message msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.TO_ConnectActivity_CONNECTED);
+                msg.sendToTarget();
+            }else
+            {
+                Message msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.TO_ConnectActivity_CONNECTION_ERROR);
+                msg.sendToTarget();
+            }
         }
 
         // Closes the client socket and causes the thread to finish.
@@ -159,7 +178,6 @@ public class BluetoothClient {
             myBlueroothConnectionReader = new BufferedReader(new InputStreamReader(mmInStream));
             myBluetoorhConnectionWriter = new PrintWriter(new OutputStreamWriter(mmOutStream));
 
-            if(btState.equals(BTStates.btConnecting))btState = BTStates.btConnectedWithDevice;
         }
 
         public void run() {
@@ -170,6 +188,8 @@ public class BluetoothClient {
                     // Read message line from the InputStream.
                     String messageLine = myBlueroothConnectionReader.readLine();
                     //todo: handle received message
+                    Message msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.TO_AuthorizeActivity_Message, messageLine);
+                    msg.sendToTarget();
                     System.out.println(messageLine);
                 } catch (IOException e) {
                     btState = BTStates.btEND;

@@ -13,7 +13,6 @@ import android.view.View
 import android.widget.*
 import android.widget.AdapterView.OnItemClickListener
 import kotlinx.android.synthetic.main.activity_main.*
-import android.R.attr.action
 
 
 const val EXTRA_BTDEVICE = "jakub.remotecontrol.BTDEVICE"
@@ -146,17 +145,24 @@ class MainActivity : AppCompatActivity() {
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery()
     }
 
+    override fun onResume() {
+        super.onResume()
+        MyBluetooth.cancelBTClient()
+
+    }
+
     /**
-     * This method starts a new activity for connecting to server and authorization.
+     * This method starts a new activity for connecting to server.
      * @param selectedBTDevName The name of the selected server device.
      */
     fun connectToServer(selectedBTDevName: String)
     {
-        val intent = Intent(this, ConnectAndAuthorizeActivity::class.java).apply {
+        val connectToServerIntent = Intent(this, ConnectActivity::class.java).apply {
             putExtra(EXTRA_BTDEVICE, selectedBTDevName)
         }
-        startActivity(intent)
+        startActivity(connectToServerIntent)
     }
+
 
     /**
      * @return

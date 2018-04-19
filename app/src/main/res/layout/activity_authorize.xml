@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="jakub.remotecontrol.ConnectAndAuthorizeActivity">
+    tools:context="jakub.remotecontrol.AuthorizeActivity">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -16,12 +16,9 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="162dp"
+            android:layout_marginTop="131dp"
             android:ems="10"
             android:inputType="textPersonName"
-            android:text="message"
-            tools:layout_editor_absoluteX="54dp"
-            tools:layout_editor_absoluteY="120dp" />
+            android:text="test" />
     </RelativeLayout>
-
 </android.support.constraint.ConstraintLayout>
