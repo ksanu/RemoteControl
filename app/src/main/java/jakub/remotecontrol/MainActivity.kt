@@ -84,11 +84,6 @@ class MainActivity : AppCompatActivity() {
                     // ListView Clicked item value
                     val itemValue = myDevicesListView.getItemAtPosition(position) as String
                     connectToServer(itemValue)
-                    // Show Alert
-                    Toast.makeText(applicationContext,
-                            "Position :$position  ListItem : $itemValue", Toast.LENGTH_LONG)
-                            .show()
-
                 }
 
             }
@@ -143,12 +138,18 @@ class MainActivity : AppCompatActivity() {
         unregisterReceiver(mReceiver)
         unregisterReceiver(mBluetoothStateChangedReveiver)
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery()
+        MyBluetooth.cancelBTClient()
     }
 
     override fun onResume() {
         super.onResume()
         MyBluetooth.cancelBTClient()
 
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        MyBluetooth.cancelBTClient()
     }
 
     /**

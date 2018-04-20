@@ -28,7 +28,7 @@ class ConnectActivity : AppCompatActivity() {
                 when(msg!!.what)
                 {
                     MyBluetooth.MessageConstants.TO_ConnectActivity_CONNECTED -> startAuthorizeActicity()
-                    MyBluetooth.MessageConstants.TO_ConnectActivity_CONNECTION_ERROR -> finish()
+                    MyBluetooth.MessageConstants.CONNECTION_ERROR -> finish()
                 }
             }
         }
@@ -44,6 +44,7 @@ class ConnectActivity : AppCompatActivity() {
     {
         val intent = Intent(this, AuthorizeActivity::class.java)
         startActivity(intent)
+        finish()
     }
 
 

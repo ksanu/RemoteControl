@@ -74,6 +74,11 @@ public class BluetoothClient {
         new Thread(new ConnectedThread(mmSocket)).start();
 
     }
+    public void startAunthorizationThread()
+    {
+        new Thread(new AuthorizationThread(mmSocket)).start();
+
+    }
     public void stopBTClient()
     {
         btState = BTStates.btEND;
@@ -81,6 +86,10 @@ public class BluetoothClient {
            if(mmSocket!=null) mmSocket.close();
            if(myBlueroothConnectionReader!=null) myBlueroothConnectionReader.close();
            if(myBluetoorhConnectionWriter!=null) myBluetoorhConnectionWriter.close();
+
+           mmSocket = null;
+           myBluetoorhConnectionWriter = null;
+           myBlueroothConnectionReader = null;
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -133,7 +142,7 @@ public class BluetoothClient {
                 msg.sendToTarget();
             }else
             {
-                Message msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.TO_ConnectActivity_CONNECTION_ERROR);
+                Message msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.CONNECTION_ERROR);
                 msg.sendToTarget();
             }
         }
@@ -149,34 +158,104 @@ public class BluetoothClient {
         }
     }
 
-    private class ConnectedThread extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
-
-        public ConnectedThread(BluetoothSocket socket) {
-            mmSocket = socket;
+    private void openIOStreams(BluetoothSocket socket)
+    {
+        if(myBlueroothConnectionReader==null && myBluetoorhConnectionWriter==null) {
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
-
-            // Get the input and output streams; using temp objects because
-            // member streams are final.
             try {
                 tmpIn = socket.getInputStream();
             } catch (IOException e) {
-                //Log.e(TAG, "Error occurred when creating input stream", e);
+                e.printStackTrace();
+                return;
             }
             try {
                 tmpOut = socket.getOutputStream();
             } catch (IOException e) {
-               // Log.e(TAG, "Error occurred when creating output stream", e);
+                e.printStackTrace();
+                return;
             }
 
-            mmInStream = tmpIn;
-            mmOutStream = tmpOut;
+            myBlueroothConnectionReader = new BufferedReader(new InputStreamReader(tmpIn));
+            myBluetoorhConnectionWriter = new PrintWriter(new OutputStreamWriter(tmpOut));
+        }
+    }
 
-            myBlueroothConnectionReader = new BufferedReader(new InputStreamReader(mmInStream));
-            myBluetoorhConnectionWriter = new PrintWriter(new OutputStreamWriter(mmOutStream));
+    public void sendGetPasswordSalt()
+    {
+        sendMessage(MessageTypes.Client.GET_PASSWORD_SALT, "null");
+    }
+    public void sendAuthorizePasswordHash(String myPasswordHash)
+    {
+        sendMessage(MessageTypes.Client.AUTHORIZE_PASSWORD_HASH, myPasswordHash);
+    }
+    public void sendReadyForRemoteControl()
+    {
+        sendMessage(MessageTypes.Client.CLIENT_STATE, MessageContent.STATE.READY_FOR_REMOTE_CONTROL);
+    }
+    public void sendClosing()
+    {
+        sendMessage(MessageTypes.Client.CLIENT_STATE, MessageContent.STATE.CLOSING);
+    }
+
+    private class AuthorizationThread extends Thread{
+
+        boolean stopThread = false;
+        public AuthorizationThread(BluetoothSocket socket)
+        {
+            openIOStreams(socket);
+
+        }
+
+        public void stopAuthorizationThread()
+        {
+            stopThread = true;
+        }
+        public void run()
+        {
+            sendGetPasswordSalt();
+            Message msg = null;
+            // Keep listening to the InputStream until an exception occurs.
+            while (!btState.equals(BTStates.btEND)&&!stopThread) {
+                try {
+                    // Read message line from the InputStream.
+                    String messageLine = myBlueroothConnectionReader.readLine();
+                    String[] msgTypeAndContent = messageLine.split("\\t");
+                    switch(msgTypeAndContent[0])
+                    {
+                        case MessageTypes.Server.PASSWORD_SALT:
+                            //todo: zapisać ?
+                            msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.TO_AuthorizeActivity_Salt, msgTypeAndContent[1]);
+                            msg.sendToTarget();
+                            break;
+                        case MessageTypes.Server.AUTHORIZATION_RESULT:
+                            msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.TO_AuthorizeActivity_Authorization_Result, msgTypeAndContent[1]);
+                            msg.sendToTarget();
+                            break;
+                        case MessageTypes.Server.SERVER_STATE:
+                            msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.SERVER_STATE, msgTypeAndContent[1]);
+                            msg.sendToTarget();
+                            break;
+                        default:
+                            break;
+
+                    }
+                } catch (IOException e) {
+                    btState = BTStates.btEND;
+                    msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.CONNECTION_ERROR);
+                    msg.sendToTarget();
+                    break;
+                }
+            }
+        }
+
+    }
+    private class ConnectedThread extends Thread {
+        private final BluetoothSocket mmSocket;
+
+        public ConnectedThread(BluetoothSocket socket) {
+            mmSocket = socket;
+            openIOStreams(socket);
 
         }
 

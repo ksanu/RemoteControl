@@ -13,9 +13,13 @@ public class MyBluetooth {
 
     public interface MessageConstants {
         int TO_ConnectActivity_CONNECTED = 10;
-        int TO_ConnectActivity_CONNECTION_ERROR = -11;
+        int CONNECTION_ERROR = -11;
 
         int TO_AuthorizeActivity_Message = 20;
+        int TO_AuthorizeActivity_Salt = 21;
+        int TO_AuthorizeActivity_Authorization_Result = 22;
+
+        int SERVER_STATE = 30;
 
 
     }
