@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothDevice;
 public class MyBluetooth {
     static MyBluetoothDevices btDev = new MyBluetoothDevices();
     static BluetoothClient btClient=null;
+    static String encodedPwHash = null;
     // Defines a Handler object that's attached to the UI thread
 
     public interface MessageConstants {
@@ -30,6 +31,7 @@ public class MyBluetooth {
         {
             btClient.stopBTClient();
             btClient = null;
+            encodedPwHash = null;
         }
     }
 }

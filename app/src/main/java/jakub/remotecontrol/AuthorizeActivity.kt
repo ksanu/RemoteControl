@@ -8,6 +8,7 @@ import android.os.Looper
 import android.os.Message
 import android.view.View
 import android.widget.*
+import jakub.remotecontrol.Security.PasswordHandler
 
 class AuthorizeActivity : AppCompatActivity() {
 
@@ -45,9 +46,9 @@ class AuthorizeActivity : AppCompatActivity() {
                         {
                             Toast.makeText(applicationContext, "Zalogowano!", Toast.LENGTH_LONG).show()
                             MyBluetooth.btClient.sendReadyForRemoteControl()
-                        }else{
+                        }else if(receivedString.equals((MessageContent.AUTHORIZATION_RESULT.FAILURE))){
                             setLoading(false)
-                            Toast.makeText(applicationContext, "Błędne hasło", Toast.LENGTH_LONG).show()
+                            Toast.makeText(applicationContext, "Błędne hasło", Toast.LENGTH_SHORT).show()
                         }
                     }
                     MyBluetooth.MessageConstants.SERVER_STATE -> {
@@ -101,6 +102,7 @@ class AuthorizeActivity : AppCompatActivity() {
                     val pwText = findViewById<EditText>(R.id.passwordEditText)
                     val password = pwText.text.toString()
                     val pwHash = PasswordHandler.getSaltedHash(password, passSalt)
+                    MyBluetooth.encodedPwHash = pwHash
                     MyBluetooth.btClient.sendAuthorizePasswordHash(pwHash)
                 }
             }).start()

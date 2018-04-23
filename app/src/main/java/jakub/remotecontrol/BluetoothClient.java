@@ -22,6 +22,8 @@ import java.io.PrintWriter;
 import java.util.Set;
 import java.util.UUID;
 
+import jakub.remotecontrol.Security.AESEncryptor;
+
 /**
  * Created by Jakub on 26.01.2018.
  */
@@ -55,9 +57,13 @@ public class BluetoothClient {
      */
     public boolean sendMessage(String messageType, String messageContent)
     {
-        if(btState.equals(BTStates.btConnectedWithDevice)&&myBluetoorhConnectionWriter!=null)
+        if(btState.equals(BTStates.btConnectedWithDevice)&&myBluetoorhConnectionWriter!=null&&MyBluetooth.encodedPwHash!=null)
         {
-            myBluetoorhConnectionWriter.write(messageType + "\t" + messageContent + "\n");
+            String msg = messageType + "\t" + messageContent;
+            String encryptedMsg = AESEncryptor.encrypt(MyBluetooth.encodedPwHash, msg);
+            System.out.println(encryptedMsg);
+            if(encryptedMsg==null) return false;
+            myBluetoorhConnectionWriter.write(encryptedMsg + "\n");
             myBluetoorhConnectionWriter.flush();
             return true;
         }else {
@@ -69,11 +75,6 @@ public class BluetoothClient {
         new Thread(new ConnectThread(device)).start();
     }
 
-    public void startCommunication()
-    {
-        new Thread(new ConnectedThread(mmSocket)).start();
-
-    }
     public void startAunthorizationThread()
     {
         new Thread(new AuthorizationThread(mmSocket)).start();
@@ -125,12 +126,6 @@ public class BluetoothClient {
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and return.
                 btState = BTStates.btUnableToConnect;
-                try {
-                    mmSocket.close();
-                } catch (IOException closeException) {
-                    //Log.e(TAG, "Could not close the client socket", closeException);
-                    closeException.printStackTrace();
-                }
                 return;
             }
 
@@ -181,9 +176,11 @@ public class BluetoothClient {
         }
     }
 
-    public void sendGetPasswordSalt()
-    {
-        sendMessage(MessageTypes.Client.GET_PASSWORD_SALT, "null");
+    public void sendGetPasswordSalt() {
+        if (btState.equals(BTStates.btConnectedWithDevice) && myBluetoorhConnectionWriter != null) {
+            myBluetoorhConnectionWriter.write(MessageTypes.Client.GET_PASSWORD_SALT + "\t" + "null" + "\n");
+            myBluetoorhConnectionWriter.flush();
+        }
     }
     public void sendAuthorizePasswordHash(String myPasswordHash)
     {
@@ -198,6 +195,51 @@ public class BluetoothClient {
         sendMessage(MessageTypes.Client.CLIENT_STATE, MessageContent.STATE.CLOSING);
     }
 
+    public void handleMessage(String messageLine)
+    {
+        Message msg = null;
+        String[] msgTypeAndContent = messageLine.split("\\t");
+        if(msgTypeAndContent[0].equals(MessageTypes.Server.PASSWORD_SALT))
+        {
+            msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.TO_AuthorizeActivity_Salt, msgTypeAndContent[1]);
+            msg.sendToTarget();
+            return;
+        }
+        if(MyBluetooth.encodedPwHash != null) {
+            String decryptedLine = AESEncryptor.decrypt(MyBluetooth.encodedPwHash, messageLine);
+            if(decryptedLine!=null) msgTypeAndContent = decryptedLine.split("\\t");
+            else msgTypeAndContent = "błąd\tbłąd".split("\\t");
+
+        }
+        else{
+            msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.TO_AuthorizeActivity_Message, "encodedPwHash == null");
+            msg.sendToTarget();
+            return;
+        }
+
+        switch(msgTypeAndContent[0])
+        {
+            case MessageTypes.Server.PASSWORD_SALT:
+                msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.TO_AuthorizeActivity_Salt, msgTypeAndContent[1]);
+                msg.sendToTarget();
+                break;
+            case MessageTypes.Server.AUTHORIZATION_RESULT:
+                msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.TO_AuthorizeActivity_Authorization_Result, msgTypeAndContent[1]);
+                msg.sendToTarget();
+                break;
+            case MessageTypes.Server.SERVER_STATE:
+                msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.SERVER_STATE, msgTypeAndContent[1]);
+                msg.sendToTarget();
+                break;
+            case "błąd":
+                break;
+            default:
+                msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.TO_AuthorizeActivity_Authorization_Result, MessageContent.AUTHORIZATION_RESULT.FAILURE);
+                msg.sendToTarget();
+                break;
+
+        }
+    }
     private class AuthorizationThread extends Thread{
 
         boolean stopThread = false;
@@ -220,26 +262,14 @@ public class BluetoothClient {
                 try {
                     // Read message line from the InputStream.
                     String messageLine = myBlueroothConnectionReader.readLine();
-                    String[] msgTypeAndContent = messageLine.split("\\t");
-                    switch(msgTypeAndContent[0])
-                    {
-                        case MessageTypes.Server.PASSWORD_SALT:
-                            //todo: zapisać ?
-                            msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.TO_AuthorizeActivity_Salt, msgTypeAndContent[1]);
-                            msg.sendToTarget();
-                            break;
-                        case MessageTypes.Server.AUTHORIZATION_RESULT:
-                            msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.TO_AuthorizeActivity_Authorization_Result, msgTypeAndContent[1]);
-                            msg.sendToTarget();
-                            break;
-                        case MessageTypes.Server.SERVER_STATE:
-                            msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.SERVER_STATE, msgTypeAndContent[1]);
-                            msg.sendToTarget();
-                            break;
-                        default:
-                            break;
-
+                    if(messageLine!=null) handleMessage(messageLine);
+                    else {
+                        msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.CONNECTION_ERROR);
+                        msg.sendToTarget();
+                        btState = BTStates.btEND;
+                        stopAuthorizationThread();
                     }
+
                 } catch (IOException e) {
                     btState = BTStates.btEND;
                     msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.CONNECTION_ERROR);
@@ -249,44 +279,6 @@ public class BluetoothClient {
             }
         }
 
-    }
-    private class ConnectedThread extends Thread {
-        private final BluetoothSocket mmSocket;
-
-        public ConnectedThread(BluetoothSocket socket) {
-            mmSocket = socket;
-            openIOStreams(socket);
-
-        }
-
-        public void run() {
-
-            // Keep listening to the InputStream until an exception occurs.
-            while (!btState.equals(BTStates.btEND)) {
-                try {
-                    // Read message line from the InputStream.
-                    String messageLine = myBlueroothConnectionReader.readLine();
-                    //todo: handle received message
-                    Message msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.TO_AuthorizeActivity_Message, messageLine);
-                    msg.sendToTarget();
-                    System.out.println(messageLine);
-                } catch (IOException e) {
-                    btState = BTStates.btEND;
-                    break;
-                }
-            }
-        }
-
-
-        // Call this method from the main activity to shut down the connection.
-        public void cancel() {
-            btState = BTStates.btEND;
-            try {
-                mmSocket.close();
-            } catch (IOException e) {
-                //Log.e(TAG, "Could not close the connect socket", e);
-            }
-        }
     }
 
 
