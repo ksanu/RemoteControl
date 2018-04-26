@@ -22,6 +22,8 @@ public class MyBluetooth {
 
         int SERVER_STATE = 30;
 
+        int TO_REMOTE_AVAILABLE_ACTION = 40;
+
 
     }
 

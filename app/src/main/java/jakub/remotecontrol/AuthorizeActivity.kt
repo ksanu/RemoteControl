@@ -63,7 +63,7 @@ class AuthorizeActivity : AppCompatActivity() {
         }
         if(MyBluetooth.btClient != null){
             MyBluetooth.btClient.changeMsgHandler(mHandler)
-            MyBluetooth.btClient.startAunthorizationThread()
+            MyBluetooth.btClient.startCommunicationThread()
         }else{
             Toast.makeText(applicationContext, "Błąd połączenia", Toast.LENGTH_LONG).show()
             finish()

@@ -35,8 +35,6 @@ class MainActivity : AppCompatActivity() {
         val filter2 = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         registerReceiver(mBluetoothStateChangedReveiver, filter2)
 
-        val info = findViewById<TextView>(R.id.infoTextView)
-        info.setText("Halo from the other side")
 
         //get listView object from xml
         val myDevicesListView = findViewById<ListView>(R.id.devicesListView)
@@ -90,14 +88,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        connectBtn.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(v: View?) {
 
-
-                Toast.makeText(applicationContext, " connect clicked", Toast.LENGTH_LONG)
-                        .show()
-            }
-        })
 
 
         findMoreBtn.setOnClickListener(object: View.OnClickListener {

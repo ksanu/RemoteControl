@@ -75,9 +75,9 @@ public class BluetoothClient {
         new Thread(new ConnectThread(device)).start();
     }
 
-    public void startAunthorizationThread()
+    public void startCommunicationThread()
     {
-        new Thread(new AuthorizationThread(mmSocket)).start();
+        new Thread(new CommunicationThread(mmSocket)).start();
 
     }
     public void stopBTClient()
@@ -155,7 +155,7 @@ public class BluetoothClient {
 
     private void openIOStreams(BluetoothSocket socket)
     {
-        if(myBlueroothConnectionReader==null && myBluetoorhConnectionWriter==null) {
+        if(myBlueroothConnectionReader==null || myBluetoorhConnectionWriter==null) {
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
             try {
@@ -195,6 +195,18 @@ public class BluetoothClient {
         sendMessage(MessageTypes.Client.CLIENT_STATE, MessageContent.STATE.CLOSING);
     }
 
+    public void sendGetAvailableActions()
+    {
+        sendMessage(MessageTypes.Client.GET_AVAILABLE_ACTIONS, "null");
+    }
+    public void sendExecuteAction(String actionName)
+    {
+        sendMessage(MessageTypes.Client.EXECUTE_ACTION, actionName);
+    }
+    public void sendExecuteSingleAction(String content)
+    {
+        sendMessage(MessageTypes.Client.EXECUTE_SINGLE_ACTION, content);
+    }
     public void handleMessage(String messageLine)
     {
         Message msg = null;
@@ -231,6 +243,9 @@ public class BluetoothClient {
                 msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.SERVER_STATE, msgTypeAndContent[1]);
                 msg.sendToTarget();
                 break;
+            case MessageTypes.Server.AVAILABLE_ACTION:
+                msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.TO_REMOTE_AVAILABLE_ACTION, msgTypeAndContent[1]);
+                msg.sendToTarget();
             case "błąd":
                 break;
             default:
@@ -240,16 +255,16 @@ public class BluetoothClient {
 
         }
     }
-    private class AuthorizationThread extends Thread{
+    private class CommunicationThread extends Thread{
 
         boolean stopThread = false;
-        public AuthorizationThread(BluetoothSocket socket)
+        public CommunicationThread(BluetoothSocket socket)
         {
             openIOStreams(socket);
 
         }
 
-        public void stopAuthorizationThread()
+        public void stopCommunicationThread()
         {
             stopThread = true;
         }
@@ -267,7 +282,7 @@ public class BluetoothClient {
                         msg = mHandler.obtainMessage(MyBluetooth.MessageConstants.CONNECTION_ERROR);
                         msg.sendToTarget();
                         btState = BTStates.btEND;
-                        stopAuthorizationThread();
+                        stopCommunicationThread();
                     }
 
                 } catch (IOException e) {

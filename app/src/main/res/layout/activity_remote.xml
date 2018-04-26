@@ -11,15 +11,16 @@
         android:layout_height="match_parent"
         >
 
-        <Button
+        <jakub.remotecontrol.AutoRepeatButton
             android:id="@+id/upArrowBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/leftArrowBtn"
             android:layout_alignStart="@+id/downArrowBtn"
-            android:background="@drawable/arrow_up" />
+            android:background="@drawable/arrow_up"
+            android:onClick="upArrowBtnOnClick" />
 
-        <Button
+        <jakub.remotecontrol.AutoRepeatButton
             android:id="@+id/leftArrowBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -27,25 +28,28 @@
             android:layout_alignParentStart="true"
             android:layout_marginStart="26dp"
             android:background="@drawable/arrow_left"
+            android:onClick="leftArrowBtnOnClick"
             tools:layout_editor_absoluteX="33dp"
             tools:layout_editor_absoluteY="0dp" />
 
-        <Button
+        <jakub.remotecontrol.AutoRepeatButton
             android:id="@+id/downArrowBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:background="@drawable/arrow_down" />
+            android:background="@drawable/arrow_down"
+            android:onClick="downArrowBtnOnClick" />
 
-        <Button
+        <jakub.remotecontrol.AutoRepeatButton
             android:id="@+id/rightArrowBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/downArrowBtn"
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="30dp"
-            android:background="@drawable/arrow_right" />
+            android:background="@drawable/arrow_right"
+            android:onClick="rightArrowBtnOnClick" />
 
         <Button
             android:id="@+id/leftClickBtn"
@@ -73,16 +77,17 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_marginTop="51dp"
-            android:layout_toStartOf="@+id/rightArrowBtn" />
+            android:layout_toStartOf="@+id/rightArrowBtn"
+            android:spinnerMode="dropdown" />
 
         <Button
             android:id="@+id/executeActionBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginEnd="17dp"
-            android:layout_marginTop="39dp"
+            android:layout_alignTop="@+id/availableActionsSpinner"
+            android:layout_marginEnd="16dp"
+            android:onClick="executeActionBtnOnClick"
             android:text="Wykonaj" />
 
         <TextView
@@ -102,7 +107,7 @@
             android:layout_above="@+id/upArrowBtn"
             android:layout_toStartOf="@+id/executeActionBtn"
             android:ems="20"
-            android:inputType="textPersonName" />
+            android:inputType="textMultiLine" />
 
         <TextView
             android:id="@+id/toSentNameTextView"
@@ -114,11 +119,12 @@
             android:textSize="20sp" />
 
         <Button
-            android:id="@+id/clearToSentBtn"
+            android:id="@+id/SendBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_alignTop="@+id/toSentEditText"
-            android:text="Wyczyść" />
+            android:onClick="SendBtnOnClick"
+            android:text="Wyślij" />
     </RelativeLayout>
 </android.support.constraint.ConstraintLayout>
