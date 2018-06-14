@@ -142,7 +142,6 @@ class MainActivity : AppCompatActivity() {
         super.onRestart()
         MyBluetooth.cancelBTClient()
     }
-
     /**
      * This method starts a new activity for connecting to server.
      * @param selectedBTDevName The name of the selected server device.

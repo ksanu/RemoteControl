@@ -4,13 +4,11 @@ import android.bluetooth.BluetoothDevice;
 
 import java.util.ArrayList;
 
-/**
- * Created by Jakub on 27.01.2018.
- */
+
 
 public class MyBluetoothDevices {
-     ArrayList<BluetoothDevice> devicesList = new ArrayList<BluetoothDevice>();
-     ArrayList<String> devicesNames = new ArrayList<String>();
+     private ArrayList<BluetoothDevice> devicesList = new ArrayList<>();
+     private ArrayList<String> devicesNames = new ArrayList<>();
 
 
     public void addDevice(BluetoothDevice dev)

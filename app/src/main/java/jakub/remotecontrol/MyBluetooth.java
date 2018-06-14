@@ -2,15 +2,11 @@ package jakub.remotecontrol;
 
 import android.bluetooth.BluetoothDevice;
 
-/**
- * Created by Jakub on 18.04.2018.
- */
 
 public class MyBluetooth {
     static MyBluetoothDevices btDev = new MyBluetoothDevices();
     static BluetoothClient btClient=null;
     static String encodedPwHash = null;
-    // Defines a Handler object that's attached to the UI thread
 
     public interface MessageConstants {
         int TO_ConnectActivity_CONNECTED = 10;
